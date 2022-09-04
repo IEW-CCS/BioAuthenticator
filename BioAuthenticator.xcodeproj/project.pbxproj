@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		364B05D628BD96AC007D3ECF /* BLEPeripheralController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364B05D528BD96AC007D3ECF /* BLEPeripheralController.swift */; };
+		364B05DA28BD9887007D3ECF /* ExternalAccessory.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 364B05D928BD9887007D3ECF /* ExternalAccessory.framework */; };
+		364B05DE28BF81BA007D3ECF /* CodeScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364B05DC28BF81B9007D3ECF /* CodeScanner.swift */; };
+		364B05DF28BF81BA007D3ECF /* ScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364B05DD28BF81BA007D3ECF /* ScannerViewController.swift */; };
+		364B05E328BFA32D007D3ECF /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364B05E228BFA32D007D3ECF /* Utility.swift */; };
+		364B05E528BFA6DD007D3ECF /* HttpTransactions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364B05E428BFA6DD007D3ECF /* HttpTransactions.swift */; };
 		36B19B9528AB11F20040136D /* BioAuthenticatorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36B19B9428AB11F20040136D /* BioAuthenticatorApp.swift */; };
 		36B19B9728AB11F20040136D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36B19B9628AB11F20040136D /* ContentView.swift */; };
 		36B19B9928AB11F80040136D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 36B19B9828AB11F80040136D /* Assets.xcassets */; };
@@ -16,6 +22,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		364B05D528BD96AC007D3ECF /* BLEPeripheralController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEPeripheralController.swift; sourceTree = "<group>"; };
+		364B05D728BD9887007D3ECF /* BioAuthenticator.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BioAuthenticator.entitlements; sourceTree = "<group>"; };
+		364B05D928BD9887007D3ECF /* ExternalAccessory.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ExternalAccessory.framework; path = System/Library/Frameworks/ExternalAccessory.framework; sourceTree = SDKROOT; };
+		364B05DB28BE3B58007D3ECF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		364B05DC28BF81B9007D3ECF /* CodeScanner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CodeScanner.swift; sourceTree = "<group>"; };
+		364B05DD28BF81BA007D3ECF /* ScannerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScannerViewController.swift; sourceTree = "<group>"; };
+		364B05E228BFA32D007D3ECF /* Utility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utility.swift; sourceTree = "<group>"; };
+		364B05E428BFA6DD007D3ECF /* HttpTransactions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HttpTransactions.swift; sourceTree = "<group>"; };
 		36B19B9128AB11F20040136D /* BioAuthenticator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BioAuthenticator.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		36B19B9428AB11F20040136D /* BioAuthenticatorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BioAuthenticatorApp.swift; sourceTree = "<group>"; };
 		36B19B9628AB11F20040136D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -30,17 +44,27 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				364B05DA28BD9887007D3ECF /* ExternalAccessory.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		364B05D828BD9887007D3ECF /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				364B05D928BD9887007D3ECF /* ExternalAccessory.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		36B19B8828AB11F20040136D = {
 			isa = PBXGroup;
 			children = (
 				36B19B9328AB11F20040136D /* BioAuthenticator */,
 				36B19B9228AB11F20040136D /* Products */,
+				364B05D828BD9887007D3ECF /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -55,12 +79,19 @@
 		36B19B9328AB11F20040136D /* BioAuthenticator */ = {
 			isa = PBXGroup;
 			children = (
+				364B05DC28BF81B9007D3ECF /* CodeScanner.swift */,
+				364B05DD28BF81BA007D3ECF /* ScannerViewController.swift */,
+				364B05DB28BE3B58007D3ECF /* Info.plist */,
+				364B05D728BD9887007D3ECF /* BioAuthenticator.entitlements */,
 				36B19B9428AB11F20040136D /* BioAuthenticatorApp.swift */,
 				36B19B9628AB11F20040136D /* ContentView.swift */,
 				36B19B9828AB11F80040136D /* Assets.xcassets */,
 				36B19B9D28AB11F80040136D /* Persistence.swift */,
 				36B19B9F28AB11F80040136D /* BioAuthenticator.xcdatamodeld */,
 				36B19B9A28AB11F80040136D /* Preview Content */,
+				364B05D528BD96AC007D3ECF /* BLEPeripheralController.swift */,
+				364B05E228BFA32D007D3ECF /* Utility.swift */,
+				364B05E428BFA6DD007D3ECF /* HttpTransactions.swift */,
 			);
 			path = BioAuthenticator;
 			sourceTree = "<group>";
@@ -143,8 +174,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				364B05DF28BF81BA007D3ECF /* ScannerViewController.swift in Sources */,
 				36B19B9E28AB11F80040136D /* Persistence.swift in Sources */,
 				36B19B9728AB11F20040136D /* ContentView.swift in Sources */,
+				364B05E528BFA6DD007D3ECF /* HttpTransactions.swift in Sources */,
+				364B05D628BD96AC007D3ECF /* BLEPeripheralController.swift in Sources */,
+				364B05E328BFA32D007D3ECF /* Utility.swift in Sources */,
+				364B05DE28BF81BA007D3ECF /* CodeScanner.swift in Sources */,
 				36B19BA128AB11F80040136D /* BioAuthenticator.xcdatamodeld in Sources */,
 				36B19B9528AB11F20040136D /* BioAuthenticatorApp.swift in Sources */,
 			);
@@ -272,12 +308,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = BioAuthenticator/BioAuthenticator.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"BioAuthenticator/Preview Content\"";
 				DEVELOPMENT_TEAM = 34KF2N2J26;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BioAuthenticator/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -290,6 +329,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = TeamPlus.BioAuthenticator;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -301,12 +341,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = BioAuthenticator/BioAuthenticator.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"BioAuthenticator/Preview Content\"";
 				DEVELOPMENT_TEAM = 34KF2N2J26;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BioAuthenticator/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -319,6 +362,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = TeamPlus.BioAuthenticator;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
