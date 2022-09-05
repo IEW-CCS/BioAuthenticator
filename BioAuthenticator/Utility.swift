@@ -27,7 +27,7 @@ extension URLSession {
     }
 }
 
-func httpRequestCredential() {
+func httpRequestCredential(requestCallback: @escaping (HttpCredentialReply) -> ()) {
     print("Start to Request Credential...")
     var jsonData: Data?
     
@@ -52,6 +52,8 @@ func httpRequestCredential() {
     }
     catch {
         print("HttpCredentialRequest JSON encode exception: " + error.localizedDescription)
+        let reply = HttpCredentialReply(process_step: "", result: "NG", credential_hash: "", server_public_key: "")
+        requestCallback(reply)
         return
     }
     
@@ -60,7 +62,9 @@ func httpRequestCredential() {
             
             if error != nil{
                 print("Credential Request Error: \(error?.localizedDescription ?? "Error")")
-                
+                let reply = HttpCredentialReply(process_step: "", result: "NG", credential_hash: "", server_public_key: "")
+                requestCallback(reply)
+
                 return
             }
             else {
@@ -70,6 +74,8 @@ func httpRequestCredential() {
                     let errorResponse = response as? HTTPURLResponse
                     let message: String = String(errorResponse!.statusCode) + " - " + HTTPURLResponse.localizedString(forStatusCode: errorResponse!.statusCode)
                     print("httpResponse message: " + message)
+                    let reply = HttpCredentialReply(process_step: "", result: "NG", credential_hash: "", server_public_key: "")
+                    requestCallback(reply)
 
                     return
                 }
@@ -80,11 +86,15 @@ func httpRequestCredential() {
                 let httpReply = try decoder.decode(HttpCredentialReply.self, from: jsonData!)
                 print("json decoding seems OK!!")
                 print("httpReply Credential: " + httpReply.credential_hash)
+                requestCallback(httpReply)
             }
         }
         catch {
             print("Cannot connect to server")
             print(error.localizedDescription)
+            let reply = HttpCredentialReply(process_step: "", result: "NG", credential_hash: "", server_public_key: "")
+            requestCallback(reply)
+
             return
         }
     }
@@ -93,7 +103,7 @@ func httpRequestCredential() {
     return
 }
 
-func httpReportUUID() {
+func httpReportUUID(reportCallback: @escaping (String) -> ()) {
     print("Start to Report Service UUID...")
     var jsonData: Data?
         
@@ -117,6 +127,7 @@ func httpReportUUID() {
     }
     catch {
         print("HttpUUIDReport JSON encode exception: " + error.localizedDescription)
+        reportCallback("NG")
         return
     }
     
@@ -125,7 +136,7 @@ func httpReportUUID() {
             
             if error != nil{
                 print("UUID Report Error: \(error?.localizedDescription ?? "Error")")
-                
+                reportCallback("NG")
                 return
             }
             else {
@@ -135,7 +146,7 @@ func httpReportUUID() {
                     let errorResponse = response as? HTTPURLResponse
                     let message: String = String(errorResponse!.statusCode) + " - " + HTTPURLResponse.localizedString(forStatusCode: errorResponse!.statusCode)
                     print("httpResponse message: " + message)
-
+                    reportCallback("NG")
                     return
                 }
                 
@@ -145,15 +156,17 @@ func httpReportUUID() {
                 let httpReply = try decoder.decode(HttpUUIDReply2.self, from: jsonData!)
                 print("json decoding seems OK!!")
                 print("HttpUUIDReply Result: " + httpReply.replyResult)
+                reportCallback(httpReply.replyResult)
                 
-                if httpReply.replyResult == "OK" {
-                    httpRequestCredential()
-                }
+                //if httpReply.replyResult == "OK" {
+                //    httpRequestCredential()
+                //}
             }
         }
         catch {
             print("Cannot connect to server")
             print(error.localizedDescription)
+            reportCallback("NG")
             return
         }
     }
@@ -182,3 +195,60 @@ func biometricsVerify(biometricsVerifyResultCallback: @escaping (Bool) -> ()) {
         }
     }
 }
+
+// Biometrics & Keychain related declaration and functions
+// Stores credentials to keychain for the given server.
+func addCredentials(_ credentials: Credentials) throws {
+    // Use the username as the account, and get the password as data.
+    let account = credentials.username
+    let credential_hash = credentials.credential_hash.data(using: String.Encoding.utf8)!
+
+    // Create an access control instance that dictates how the item can be read later.
+    let access = SecAccessControlCreateWithFlags(nil, // Use the default allocator.
+                                                 kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly,
+                                                 .userPresence,
+                                                 nil) // Ignore any error.
+
+    // Allow a device unlock in the last 10 seconds to be used to get at keychain items.
+    let context = LAContext()
+    context.touchIDAuthenticationAllowableReuseDuration = 10
+
+    // Build the query for use in the add operation.
+    let query: [String: Any] = [kSecClass as String: kSecClassInternetPassword,
+                                kSecAttrAccount as String: account,
+                                kSecAttrServer as String: credentials.server,
+                                kSecAttrAccessControl as String: access as Any,
+                                kSecUseAuthenticationContext as String: context,
+                                kSecValueData as String: credential_hash]
+
+    let status = SecItemAdd(query as CFDictionary, nil)
+    guard status == errSecSuccess else { throw KeychainError(status: status) }
+}
+
+
+// Reads the stored credentials from keychain for the given server.
+func readCredentials(server: String) throws -> Credentials {
+    let context = LAContext()
+    context.localizedReason = "Access your password on the keychain"
+    let query: [String: Any] = [kSecClass as String: kSecClassInternetPassword,
+                                kSecAttrServer as String: server,
+                                kSecMatchLimit as String: kSecMatchLimitOne,
+                                kSecReturnAttributes as String: true,
+                                kSecUseAuthenticationContext as String: context,
+                                kSecReturnData as String: true]
+
+    var item: CFTypeRef?
+    let status = SecItemCopyMatching(query as CFDictionary, &item)
+    guard status == errSecSuccess else { throw KeychainError(status: status) }
+
+    guard let existingItem = item as? [String: Any],
+        let credentialData = existingItem[kSecValueData as String] as? Data,
+        let credential_hash = String(data: credentialData, encoding: String.Encoding.utf8),
+        let account = existingItem[kSecAttrAccount as String] as? String
+        else {
+            throw KeychainError(status: errSecInternalError)
+    }
+
+    return Credentials(server: server, username: account, credential_hash: credential_hash)
+}
+

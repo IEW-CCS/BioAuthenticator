@@ -22,8 +22,6 @@ struct ContentView: View {
     var body: some View {
         GeometryReader { proxy in
             VStack {
-                Text("\(blePeripheralController.statusMessage)")
-                    .padding()
                 //Spacer()
                 /*
                 Button(action: {blePeripheralController.start()}) {
@@ -67,10 +65,16 @@ struct ContentView: View {
                             RoundedRectangle(cornerRadius: 10)
                                 .stroke(Color.blue, lineWidth: 2))
                 }
-                
-                Text("\(scannedCode ?? "Scan Error")")
                     .padding()
                 
+                Text("\(scannedCode ?? "")")
+                    .padding()
+                
+                Spacer()
+                
+                Text("\(blePeripheralController.statusMessage)")
+                    .padding()
+
                 /*
                 Button(action: {
                     //blePeripheralController.start()
@@ -89,10 +93,7 @@ struct ContentView: View {
                     if case let .success(result) = response {
                         scannedCode = result.string
                         isPresentingScanner = false
-                        //httpRequestCredential()
                         blePeripheralController.start()
-                        //sleep(3)
-                        //httpReportUUID()
                     }
                 }
             }

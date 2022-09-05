@@ -44,4 +44,3 @@ struct HttpUUIDReply2: Codable {
     let replyResult: String
 }
 
-

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		362C38CD28C624FF0048A42A /* Definitionns.swift in Sources */ = {isa = PBXBuildFile; fileRef = 362C38CC28C624FF0048A42A /* Definitionns.swift */; };
 		364B05D628BD96AC007D3ECF /* BLEPeripheralController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364B05D528BD96AC007D3ECF /* BLEPeripheralController.swift */; };
 		364B05DA28BD9887007D3ECF /* ExternalAccessory.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 364B05D928BD9887007D3ECF /* ExternalAccessory.framework */; };
 		364B05DE28BF81BA007D3ECF /* CodeScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364B05DC28BF81B9007D3ECF /* CodeScanner.swift */; };
@@ -22,6 +23,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		362C38CC28C624FF0048A42A /* Definitionns.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Definitionns.swift; sourceTree = "<group>"; };
 		364B05D528BD96AC007D3ECF /* BLEPeripheralController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEPeripheralController.swift; sourceTree = "<group>"; };
 		364B05D728BD9887007D3ECF /* BioAuthenticator.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BioAuthenticator.entitlements; sourceTree = "<group>"; };
 		364B05D928BD9887007D3ECF /* ExternalAccessory.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ExternalAccessory.framework; path = System/Library/Frameworks/ExternalAccessory.framework; sourceTree = SDKROOT; };
@@ -51,6 +53,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		362C38CB28C4DE990048A42A /* Scanner */ = {
+			isa = PBXGroup;
+			children = (
+				364B05DC28BF81B9007D3ECF /* CodeScanner.swift */,
+				364B05DD28BF81BA007D3ECF /* ScannerViewController.swift */,
+			);
+			path = Scanner;
+			sourceTree = "<group>";
+		};
 		364B05D828BD9887007D3ECF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -79,8 +90,8 @@
 		36B19B9328AB11F20040136D /* BioAuthenticator */ = {
 			isa = PBXGroup;
 			children = (
-				364B05DC28BF81B9007D3ECF /* CodeScanner.swift */,
-				364B05DD28BF81BA007D3ECF /* ScannerViewController.swift */,
+				362C38CB28C4DE990048A42A /* Scanner */,
+				364B05E228BFA32D007D3ECF /* Utility.swift */,
 				364B05DB28BE3B58007D3ECF /* Info.plist */,
 				364B05D728BD9887007D3ECF /* BioAuthenticator.entitlements */,
 				36B19B9428AB11F20040136D /* BioAuthenticatorApp.swift */,
@@ -90,8 +101,8 @@
 				36B19B9F28AB11F80040136D /* BioAuthenticator.xcdatamodeld */,
 				36B19B9A28AB11F80040136D /* Preview Content */,
 				364B05D528BD96AC007D3ECF /* BLEPeripheralController.swift */,
-				364B05E228BFA32D007D3ECF /* Utility.swift */,
 				364B05E428BFA6DD007D3ECF /* HttpTransactions.swift */,
+				362C38CC28C624FF0048A42A /* Definitionns.swift */,
 			);
 			path = BioAuthenticator;
 			sourceTree = "<group>";
@@ -183,6 +194,7 @@
 				364B05DE28BF81BA007D3ECF /* CodeScanner.swift in Sources */,
 				36B19BA128AB11F80040136D /* BioAuthenticator.xcdatamodeld in Sources */,
 				36B19B9528AB11F20040136D /* BioAuthenticatorApp.swift in Sources */,
+				362C38CD28C624FF0048A42A /* Definitionns.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
