@@ -8,29 +8,24 @@
 import Foundation
 
 struct HttpCredentialRequest: Codable {
-    let server: String
-    let user_name: String
-    let public_key: String
-    let process_step: String
+    var username: String = ""
 }
 
 struct HttpCredentialReply: Codable {
-    let process_step: String
-    let result: String
-    let credential_hash: String
-    let server_public_key: String
+    var credential: String = ""
 }
 
 struct HttpUUIDReport: Codable {
-    let server: String
-    let user_name: String
-    let process_step: String
-    let device_uuid: String
+    var UserName: String = ""
+    var DeviceUUID: String = ""
+    var MobilePublicKey: String = ""
+    //var TimeStamp: Date = Date.now
 }
 
 struct HttpUUIDReply: Codable {
-    let process_step: String
-    let result: String
+    var ServerName: String = ""
+    var ServerPublicKey: String = ""
+    //var TimeStamp: Date = Date.now
 }
 
 struct HttpUUIDReport2: Codable {
@@ -44,3 +39,19 @@ struct HttpUUIDReply2: Codable {
     let replyResult: String
 }
 
+struct QRCodeContent: Codable {
+    let strServerURL: String
+    let strTokenID: String
+    let strUserName: String
+}
+
+struct HttpTrx: Codable {
+    var username: String = ""
+    var devicetype: String = ""
+    var procstep: String = ""
+    var returncode: Int = 0
+    var returnmsg: String?
+    var datacontent: String?
+    var ecs: String?
+    var ecssign: String?
+}

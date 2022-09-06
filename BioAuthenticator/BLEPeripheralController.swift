@@ -30,9 +30,23 @@ class BLEPeripheralController: NSObject, CBPeripheralManagerDelegate, Observable
 
     var peripheralManager : CBPeripheralManager?
     var charDictionary = [String: CBMutableCharacteristic]()
+    var codeContent: QRCodeContent?
 
-    func start() {
+    func start(qrCode: String) {
         statusMessage = "Start Peripheral Manager"
+        
+        let decoder = JSONDecoder()
+        let jsonData = qrCode.data(using: String.Encoding.utf8, allowLossyConversion: true)
+        do {
+            self.codeContent = try decoder.decode(QRCodeContent.self, from: jsonData!)
+            
+        }
+        catch {
+            print("QRCodeContent Decode Exception: " + error.localizedDescription)
+            
+            return
+        }
+        
         peripheralManager = .init(delegate: self, queue: .main)
         //peripheralManager?.delegate = self
     }
@@ -148,7 +162,7 @@ class BLEPeripheralController: NSObject, CBPeripheralManagerDelegate, Observable
     func peripheralManagerDidStartAdvertising(_ peripheral: CBPeripheralManager, error: Error?) {
         print("Start Advertising...")
         statusMessage = "Start Advertising..."
-        httpReportUUID(reportCallback: httpReportUUIDCallback)
+        httpReportUUID(codeContent: self.codeContent!, reportCallback: httpReportUUIDCallback)
     }
     
     // Set data to Characteristic
@@ -409,6 +423,7 @@ class BLEPeripheralController: NSObject, CBPeripheralManagerDelegate, Observable
                     self.statusMessage = "biometricsVerifyResultCallback Verify OK"
                 }
                 
+                // After Biometrics Verify OK, write credential content to Keychain
                 let credentials = Credentials(server: self.accountInfo.server_name, username: self.accountInfo.user_name, credential_hash: self.bioCredentialContent)
 
                 do {
@@ -459,15 +474,15 @@ class BLEPeripheralController: NSObject, CBPeripheralManagerDelegate, Observable
     func httpReportUUIDCallback(result: String) {
         print("BLEPeripheralController Receive httpReportUUIDCallback")
         if result == "OK" {
-            httpRequestCredential(requestCallback: httpCredentialRequestCallback)
+            httpRequestCredential(codeContent: self.codeContent!, requestCallback: httpCredentialRequestCallback)
         }
     }
 
-    func httpCredentialRequestCallback(reply: HttpCredentialReply) {
+    func httpCredentialRequestCallback(result: String, reply: HttpCredentialReply) {
         print("BLEPeripheralController Receive httpCredentialRequestCallback")
-        if reply.result == "OK" {
+        if result == "OK" {
             // Start to write Credential Content into CREDENTIALCONTENT_CHARACTERISTIC
-            self.bioCredentialContent = reply.credential_hash
+            self.bioCredentialContent = reply.credential
             do {
                 let data = self.bioCredentialContent.data(using: .utf8)
                 try setData(data!, uuidString: CREDENTIALCONTENT_CHARACTERISTIC_UUID)
@@ -479,27 +494,6 @@ class BLEPeripheralController: NSObject, CBPeripheralManagerDelegate, Observable
                 }
                 
             }
-
-            /*
-            let credentials = Credentials(server: self.accountInfo.server_name, username: self.accountInfo.user_name, credential_hash: self.bioCredentialContent)
-
-            do {
-                try addCredentials(credentials)
-                print("Added Credential to Keychain")
-                DispatchQueue.main.async {
-                    self.statusMessage = "Added Credential to Keychain"
-                }
-                
-            } catch {
-                if let error = error as? KeychainError {
-                    print("Add Credential to Keychain Error: " + error.localizedDescription)
-                    DispatchQueue.main.async {
-                        self.statusMessage = "Add Credential to Keychain Error: " + error.localizedDescription
-                    }
-
-                }
-            }
-            */
         }
     }
 

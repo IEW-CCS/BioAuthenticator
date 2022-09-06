@@ -93,7 +93,7 @@ struct ContentView: View {
                     if case let .success(result) = response {
                         scannedCode = result.string
                         isPresentingScanner = false
-                        blePeripheralController.start()
+                        blePeripheralController.start(qrCode: scannedCode!)
                     }
                 }
             }

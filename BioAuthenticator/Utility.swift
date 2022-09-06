@@ -27,102 +27,41 @@ extension URLSession {
     }
 }
 
-func httpRequestCredential(requestCallback: @escaping (HttpCredentialReply) -> ()) {
-    print("Start to Request Credential...")
-    var jsonData: Data?
-    
-    
-    //let url = "http://10.0.1.25:5000/CredentialRequest"
-    let url = "http://172.20.10.14:5000/CredentialRequest"
-    
-    var UrlRequest = URLRequest(url: URL(string: url)!)
-    
-    //hard code request body
-    do {
-        let httpBody = HttpCredentialRequest(server: "CredentialRequest", user_name: "james001", public_key: "1234abcd", process_step: "CREQ")
-        
-        jsonData = try JSONEncoder().encode(httpBody)
-        let jsonString = String(data: jsonData!, encoding: .utf8)!
-        print("Credential Request JSON string: " + jsonString)
-
-        UrlRequest.httpMethod = "POST"
-        UrlRequest.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
-        UrlRequest.setValue("application/json", forHTTPHeaderField: "Accept")
-        UrlRequest.httpBody = jsonData
-    }
-    catch {
-        print("HttpCredentialRequest JSON encode exception: " + error.localizedDescription)
-        let reply = HttpCredentialReply(process_step: "", result: "NG", credential_hash: "", server_public_key: "")
-        requestCallback(reply)
-        return
-    }
-    
-    let task = URLSession.shared.dataTask(with: UrlRequest) {(data, response, error) in
-        do {
-            
-            if error != nil{
-                print("Credential Request Error: \(error?.localizedDescription ?? "Error")")
-                let reply = HttpCredentialReply(process_step: "", result: "NG", credential_hash: "", server_public_key: "")
-                requestCallback(reply)
-
-                return
-            }
-            else {
-                guard let httpResponse = response as? HTTPURLResponse,
-                    (200...299).contains(httpResponse.statusCode) else {
-                        
-                    let errorResponse = response as? HTTPURLResponse
-                    let message: String = String(errorResponse!.statusCode) + " - " + HTTPURLResponse.localizedString(forStatusCode: errorResponse!.statusCode)
-                    print("httpResponse message: " + message)
-                    let reply = HttpCredentialReply(process_step: "", result: "NG", credential_hash: "", server_public_key: "")
-                    requestCallback(reply)
-
-                    return
-                }
-                
-                let outputStr  = String(data: data!, encoding: String.Encoding.utf8) as String?
-                let jsonData = outputStr!.data(using: String.Encoding.utf8, allowLossyConversion: true)
-                let decoder = JSONDecoder()
-                let httpReply = try decoder.decode(HttpCredentialReply.self, from: jsonData!)
-                print("json decoding seems OK!!")
-                print("httpReply Credential: " + httpReply.credential_hash)
-                requestCallback(httpReply)
-            }
-        }
-        catch {
-            print("Cannot connect to server")
-            print(error.localizedDescription)
-            let reply = HttpCredentialReply(process_step: "", result: "NG", credential_hash: "", server_public_key: "")
-            requestCallback(reply)
-
-            return
-        }
-    }
-    task.resume()
-    
-    return
-}
-
-func httpReportUUID(reportCallback: @escaping (String) -> ()) {
+func httpReportUUID(codeContent: QRCodeContent, reportCallback: @escaping (String) -> ()) {
     print("Start to Report Service UUID...")
     var jsonData: Data?
         
     //let url = "http://10.0.1.25:5000/UploadUUID"
-    let url = "http://172.20.10.14:5000/UploadUUID"
+    //let url = "http://172.20.10.14:5000/UploadUUID"
+    let url = codeContent.strServerURL
     var UrlRequest = URLRequest(url: URL(string: url)!)
     //hard code request body
     do {
         //let httpBody = HttpUUIDReport(server: "CredentialRequest", user_name: "james001", process_step: "CREQ", device_uuid: "a7gf67292-0001-00a2")
         
-        let httpBody2 = HttpUUIDReport2(serverURL: "UUID_Report", clientID: "client_james", processStep: "UUIDREPORT", serviceUUID: "e593247c-bc00-41a3-93d0-3ad4b64b27cb")
+        //let httpBody2 = HttpUUIDReport2(serverURL: "UUID_Report", clientID: "client_james", processStep: "UUIDREPORT", serviceUUID: "e593247c-bc00-41a3-93d0-3ad4b64b27cb")
         
-        jsonData = try JSONEncoder().encode(httpBody2)
+        var uuidReport: HttpUUIDReport = HttpUUIDReport()
+        uuidReport.UserName = codeContent.strUserName
+        uuidReport.DeviceUUID = "UUID_abc"
+        let jsonReportData = try JSONEncoder().encode(uuidReport)
+        let uuidReportString = String(data: jsonReportData, encoding: .utf8)!
+        
+        var httpBody: HttpTrx = HttpTrx()
+        httpBody.username = codeContent.strUserName
+        httpBody.devicetype = "MOBILE"
+        httpBody.procstep = "UUID_RPT"
+        httpBody.datacontent = uuidReportString
+        
+        jsonData = try JSONEncoder().encode(httpBody)
         let jsonString = String(data: jsonData!, encoding: .utf8)!
+        
         print("UUID Report JSON string: " + jsonString)
 
         UrlRequest.httpMethod = "POST"
         UrlRequest.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
         UrlRequest.setValue("application/json", forHTTPHeaderField: "Accept")
+        UrlRequest.setValue("bearer " + codeContent.strTokenID, forHTTPHeaderField: "Authorization")
         UrlRequest.httpBody = jsonData
     }
     catch {
@@ -149,14 +88,29 @@ func httpReportUUID(reportCallback: @escaping (String) -> ()) {
                     reportCallback("NG")
                     return
                 }
-                
+                                
                 let outputStr  = String(data: data!, encoding: String.Encoding.utf8) as String?
-                let jsonData = outputStr!.data(using: String.Encoding.utf8, allowLossyConversion: true)
+                let replyData = outputStr!.data(using: String.Encoding.utf8, allowLossyConversion: true)
+                
                 let decoder = JSONDecoder()
-                let httpReply = try decoder.decode(HttpUUIDReply2.self, from: jsonData!)
+                let httpReply = try decoder.decode(HttpTrx.self, from: replyData!)
                 print("json decoding seems OK!!")
-                print("HttpUUIDReply Result: " + httpReply.replyResult)
-                reportCallback(httpReply.replyResult)
+                print("HttpUUIDReply Result: " + String(httpReply.returncode))
+                
+                if httpReply.returncode == 0 {
+                    let uuidReplyData = httpReply.datacontent!.data(using: String.Encoding.utf8, allowLossyConversion: true)
+                    let uuidReplyDecoder = JSONDecoder()
+                    let uuidReply = try uuidReplyDecoder.decode(HttpUUIDReply.self, from: uuidReplyData!)
+                    print("json decoding seems OK!!")
+                    print("uuidReply ServerPublicKey: " + uuidReply.ServerPublicKey)
+                    reportCallback("OK")
+                }
+                else {
+                    print("HttpUUIDReply return code non-zero: " + String(httpReply.returncode))
+                    reportCallback("NG")
+                }
+                
+                
                 
                 //if httpReply.replyResult == "OK" {
                 //    httpRequestCredential()
@@ -167,6 +121,109 @@ func httpReportUUID(reportCallback: @escaping (String) -> ()) {
             print("Cannot connect to server")
             print(error.localizedDescription)
             reportCallback("NG")
+            return
+        }
+    }
+    task.resume()
+    
+    return
+}
+
+func httpRequestCredential(codeContent: QRCodeContent, requestCallback: @escaping (String, HttpCredentialReply) -> ()) {
+    print("Start to Request Credential...")
+    var jsonData: Data?
+    
+    
+    //let url = "http://10.0.1.25:5000/CredentialRequest"
+    //let url = "http://172.20.10.14:5000/CredentialRequest"
+    let url = codeContent.strServerURL
+    var UrlRequest = URLRequest(url: URL(string: url)!)
+    
+    //hard code request body
+    do {
+        //let httpBody = HttpCredentialRequest(server: "CredentialRequest", user_name: "james001", public_key: "1234abcd", process_step: "CREQ")
+        
+        var credentialRequest: HttpCredentialRequest = HttpCredentialRequest()
+        credentialRequest.username = codeContent.strUserName
+        let jsonRequestData = try JSONEncoder().encode(credentialRequest)
+        let requestString = String(data: jsonRequestData, encoding: .utf8)!
+        
+        var httpBody: HttpTrx = HttpTrx()
+        httpBody.username = codeContent.strUserName
+        httpBody.devicetype = "MOBILE"
+        httpBody.procstep = "CRED_REQ"
+        httpBody.datacontent = requestString
+        
+        jsonData = try JSONEncoder().encode(httpBody)
+        let jsonString = String(data: jsonData!, encoding: .utf8)!
+        
+        print("Credential Request JSON string: " + jsonString)
+
+        UrlRequest.httpMethod = "POST"
+        UrlRequest.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
+        UrlRequest.setValue("application/json", forHTTPHeaderField: "Accept")
+        UrlRequest.setValue("bearer " + codeContent.strTokenID, forHTTPHeaderField: "Authorization")
+        UrlRequest.httpBody = jsonData
+    }
+    catch {
+        print("HttpCredentialRequest JSON encode exception: " + error.localizedDescription)
+        let reply = HttpCredentialReply()
+        requestCallback("NG", reply)
+        return
+    }
+    
+    let task = URLSession.shared.dataTask(with: UrlRequest) {(data, response, error) in
+        do {
+            
+            if error != nil{
+                print("Credential Request Error: \(error?.localizedDescription ?? "Error")")
+                let reply = HttpCredentialReply()
+                requestCallback("NG", reply)
+
+                return
+            }
+            else {
+                guard let httpResponse = response as? HTTPURLResponse,
+                    (200...299).contains(httpResponse.statusCode) else {
+                        
+                    let errorResponse = response as? HTTPURLResponse
+                    let message: String = String(errorResponse!.statusCode) + " - " + HTTPURLResponse.localizedString(forStatusCode: errorResponse!.statusCode)
+                    print("httpResponse message: " + message)
+                    let reply = HttpCredentialReply()
+                    requestCallback("NG", reply)
+
+                    return
+                }
+                
+                let outputStr  = String(data: data!, encoding: String.Encoding.utf8) as String?
+                let replyData = outputStr!.data(using: String.Encoding.utf8, allowLossyConversion: true)
+                
+                let decoder = JSONDecoder()
+                let httpReply = try decoder.decode(HttpTrx.self, from: replyData!)
+                print("json decoding seems OK!!")
+                print("HttpRequestCredential Result: " + String(httpReply.returncode))
+                
+                if httpReply.returncode == 0 {
+                    let credentialReplyData = httpReply.datacontent!.data(using: String.Encoding.utf8, allowLossyConversion: true)
+                    let credentialReplyDecoder = JSONDecoder()
+                    let credentialReply = try credentialReplyDecoder.decode(HttpCredentialReply.self, from: credentialReplyData!)
+                    print("json decoding seems OK!!")
+                    print("Credential: " + credentialReply.credential)
+                    requestCallback("OK", credentialReply)
+                }
+                else {
+                    print("HttpUUIDReply return code non-zero: " + String(httpReply.returncode))
+                    let reply = HttpCredentialReply()
+                    requestCallback("NG", reply)
+                }
+            }
+        }
+        catch {
+            print("Cannot connect to server")
+            print(error.localizedDescription)
+            let reply = HttpCredentialReply()
+            requestCallback("NG", reply)
+
             return
         }
     }

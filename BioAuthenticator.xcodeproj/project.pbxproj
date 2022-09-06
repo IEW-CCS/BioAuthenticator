@@ -91,7 +91,10 @@
 			isa = PBXGroup;
 			children = (
 				362C38CB28C4DE990048A42A /* Scanner */,
+				362C38CC28C624FF0048A42A /* Definitionns.swift */,
+				364B05E428BFA6DD007D3ECF /* HttpTransactions.swift */,
 				364B05E228BFA32D007D3ECF /* Utility.swift */,
+				364B05D528BD96AC007D3ECF /* BLEPeripheralController.swift */,
 				364B05DB28BE3B58007D3ECF /* Info.plist */,
 				364B05D728BD9887007D3ECF /* BioAuthenticator.entitlements */,
 				36B19B9428AB11F20040136D /* BioAuthenticatorApp.swift */,
@@ -100,9 +103,6 @@
 				36B19B9D28AB11F80040136D /* Persistence.swift */,
 				36B19B9F28AB11F80040136D /* BioAuthenticator.xcdatamodeld */,
 				36B19B9A28AB11F80040136D /* Preview Content */,
-				364B05D528BD96AC007D3ECF /* BLEPeripheralController.swift */,
-				364B05E428BFA6DD007D3ECF /* HttpTransactions.swift */,
-				362C38CC28C624FF0048A42A /* Definitionns.swift */,
 			);
 			path = BioAuthenticator;
 			sourceTree = "<group>";
