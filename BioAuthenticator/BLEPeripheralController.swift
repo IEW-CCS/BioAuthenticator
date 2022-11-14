@@ -20,20 +20,28 @@ class BLEPeripheralController: NSObject, CBPeripheralManagerDelegate, Observable
     private var bioVerifyResult = "NG"
     private var bioCredentialContent = ""
     private var accountInfo = BioAccountInformation(bio_switch_flag: "OFF", mode: "", server_name: "", user_name: "")
+    public var startMode = CONNECT_MODE_REGISTER
     
     //GATT UUID Definition
-    let DEVICE_NAME = "BioAuth"
-    let SERVICE_UUID = "e593247c-bc00-41a3-93d0-3ad4b64b27cb"                           // Service UUID
-    let SWITCHFLAG_CHARACTERISTIC_UUID = "97a1c8e5-e399-4124-a363-750d1c7102af"         // Turn ON/OFF Biometrics Process UUID
-    let VERIFYRESULT_CHARACTERISTIC_UUID = "4e4a3a1b-fd4a-40a5-a08f-586078499da9"       // Notify for Biometrics Verify Result UUID
-    let CREDENTIALCONTENT_CHARACTERISTIC_UUID = "92f59a03-0e61-41eb-b758-64460c72706a"  // Credential Content Data UUID
+    let DEVICE_NAME = "BioAuth2"
+    //let SERVICE_UUID = "e593247c-bc00-41a3-93d0-3ad4b64b27cb"                           // Service UUID
+    //let SWITCHFLAG_CHARACTERISTIC_UUID = "97a1c8e5-e399-4124-a363-750d1c7102af"         // Turn ON/OFF Biometrics Process UUID
+    //let VERIFYRESULT_CHARACTERISTIC_UUID = "4e4a3a1b-fd4a-40a5-a08f-586078499da9"       // Notify for Biometrics Verify Result UUID
+    //let CREDENTIALCONTENT_CHARACTERISTIC_UUID = "92f59a03-0e61-41eb-b758-64460c72706a"  // Credential Content Data UUID
+
+
+    let SERVICE_UUID = "49a92bf1-b243-4b92-9537-815476f2d06b"                           // Service UUID
+    let SWITCHFLAG_CHARACTERISTIC_UUID = "d24385a6-60e8-4976-bb20-c89567a79527"         // Turn ON/OFF Biometrics Process UUID
+    let VERIFYRESULT_CHARACTERISTIC_UUID = "ab3d255f-fd36-42d8-a575-8cc27b651bec"       // Notify for Biometrics Verify Result UUID
+    let CREDENTIALCONTENT_CHARACTERISTIC_UUID = "59f87364-6a96-4c25-8e3b-7424d7a56bc8"  // Credential Content Data UUID
 
     var peripheralManager : CBPeripheralManager?
     var charDictionary = [String: CBMutableCharacteristic]()
     var codeContent: QRCodeContent?
 
-    func start(qrCode: String) {
+    func start_register(qrCode: String) {
         statusMessage = "Start Peripheral Manager"
+        print("start_register: Start Peripheral Manager")
         
         let decoder = JSONDecoder()
         let jsonData = qrCode.data(using: String.Encoding.utf8, allowLossyConversion: true)
@@ -51,26 +59,74 @@ class BLEPeripheralController: NSObject, CBPeripheralManagerDelegate, Observable
         //peripheralManager?.delegate = self
     }
     
-    func writeVerifyResult(result: String) {
+    func start_auth() {
+        statusMessage = "Start Peripheral Manager"
+        print("start_auth: Start Peripheral Manager")
+        
+        /*
+        let decoder = JSONDecoder()
+        let jsonData = qrCode.data(using: String.Encoding.utf8, allowLossyConversion: true)
         do {
-            let data = result.data(using: .utf8)
-            try setData(data!, uuidString: VERIFYRESULT_CHARACTERISTIC_UUID)
-            self.bioVerifyResult = result
+            self.codeContent = try decoder.decode(QRCodeContent.self, from: jsonData!)
+            
         }
         catch {
-            print(error)
-            statusMessage = "setData Exception: " + error.localizedDescription
+            print("QRCodeContent Decode Exception: " + error.localizedDescription)
+            
+            return
+        }
+        */
+        
+        peripheralManager = .init(delegate: self, queue: .main)
+    }
+    
+    func start_test() {
+        statusMessage = "Start Peripheral Manager"
+        print("start_test: Start Peripheral Manager")
+        
+        if peripheralManager == nil {
+            print("start_test: peripheralManager is nil")
+            peripheralManager = .init(delegate: self, queue: .main)
+        }
+        else {
+            print("start_test: peripheralManager is non-nil")
         }
     }
     
+    // Set data to Characteristic
+    func setData(_ data: Data, uuidString: String) throws {
+        guard let characteristic = charDictionary[uuidString] else {
+            // No such the uuid
+            print("Characteristic Not Found")
+            
+            statusMessage = "Characteristic Not Found"
+            return
+        }
+        
+        let dataString = String(data: data, encoding: String.Encoding.utf8)!
+        //self.textView.string = self.textView.string + dataString! + "\n"
+        print("Set Data to Characteristic: " + dataString)
+        DispatchQueue.main.async {
+            self.statusMessage = "Set Data to Characteristic: " + dataString
+        }
+        
+        peripheralManager?.updateValue(
+            data,
+            for: characteristic,
+            onSubscribedCentrals: nil
+        )
+    }
+    
     func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
-        print("peripheralManagerDidUpdateState")
+        print("peripheralManagerDidUpdateState: " + String(peripheral.state.rawValue))
         guard peripheral.state == .poweredOn else {
             print(peripheral.state.rawValue)
             statusMessage = "Peripheral State Raw Value: " + String(peripheral.state.rawValue)
             return
         }
         
+        peripheralManager?.removeAllServices()
+
         var service: CBMutableService
         var characteristic: CBMutableCharacteristic
         var charArray = [CBCharacteristic]()
@@ -81,10 +137,10 @@ class BLEPeripheralController: NSObject, CBPeripheralManagerDelegate, Observable
         // Register Biometrics Switch Flag characteristic
         characteristic = CBMutableCharacteristic(
             type: CBUUID(string: SWITCHFLAG_CHARACTERISTIC_UUID),
-            properties: [.read, .write, .notify],
+            properties: [.read, .write],
             value: nil,
-            //permissions: [.writeable, .readable]
-            permissions: [.writeEncryptionRequired, .readEncryptionRequired]
+            permissions: [.writeable, .readable]
+            //permissions: [.writeEncryptionRequired, .readEncryptionRequired]
         )
         
         charDictionary[SWITCHFLAG_CHARACTERISTIC_UUID] = characteristic
@@ -93,10 +149,11 @@ class BLEPeripheralController: NSObject, CBPeripheralManagerDelegate, Observable
         // Register Biometrics Verify Result characteristic
         characteristic = CBMutableCharacteristic(
             type: CBUUID(string: VERIFYRESULT_CHARACTERISTIC_UUID),
-            properties: [.read, .write, .notify, .indicate],
+            //properties: [.read, .write, .notify, .indicate],
+            properties: [.read, .write, .indicate],
             value: nil,
-            //permissions: [.writeable, .readable]
-            permissions: [.writeEncryptionRequired, .readEncryptionRequired]
+            permissions: [.writeable, .readable]
+            //permissions: [.writeEncryptionRequired, .readEncryptionRequired]
         )
         charDictionary[VERIFYRESULT_CHARACTERISTIC_UUID] = characteristic
         charArray.append(characteristic)
@@ -104,27 +161,36 @@ class BLEPeripheralController: NSObject, CBPeripheralManagerDelegate, Observable
         // Register Credential Content characteristic
         characteristic = CBMutableCharacteristic(
             type: CBUUID(string: CREDENTIALCONTENT_CHARACTERISTIC_UUID),
-            properties: [.read, .write],
+            properties: [.read, .write, .indicate],
             value: nil,
-            //permissions: [.writeable, .readable]
-            permissions: [.writeEncryptionRequired, .readEncryptionRequired]
+            permissions: [.writeable, .readable]
+            //permissions: [.writeEncryptionRequired, .readEncryptionRequired]
         )
         charDictionary[CREDENTIALCONTENT_CHARACTERISTIC_UUID] = characteristic
         charArray.append(characteristic)
 
+        print("Create Service & Characteristics")
         statusMessage = "Create Service & Characteristics"
         service.characteristics = charArray
+        
+        //peripheralManager?.remove(service)
         peripheralManager?.add(service)
+        
     }
-
+    
     func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error: Error?) {
-        print("peripheralManager didAdd service")
         guard error == nil else {
             //print("ERROR:{\(#file, #function)}\n")
             print(error!.localizedDescription)
             statusMessage = error!.localizedDescription
             return
         }
+        
+        //print("peripheralManager remove service first")
+        //peripheralManager?.remove(service as! CBMutableService)
+        
+        print("peripheralManager start to add service")
+        
         
         do {
             let data = self.bioSwitchFlag.data(using: .utf8)
@@ -162,40 +228,22 @@ class BLEPeripheralController: NSObject, CBPeripheralManagerDelegate, Observable
     func peripheralManagerDidStartAdvertising(_ peripheral: CBPeripheralManager, error: Error?) {
         print("Start Advertising...")
         statusMessage = "Start Advertising..."
-        httpReportUUID(codeContent: self.codeContent!, reportCallback: httpReportUUIDCallback)
-    }
-    
-    // Set data to Characteristic
-    func setData(_ data: Data, uuidString: String) throws {
-        guard let characteristic = charDictionary[uuidString] else {
-            // No such the uuid
-            print("Characteristic Not Found")
-            
-            statusMessage = "Characteristic Not Found"
-            return
+        if startMode == CONNECT_MODE_REGISTER {
+            print("Register Mode to send httpReportUUID transaction")
+            statusMessage = "Register Mode to send httpReportUUID transaction"
+            httpReportUUID(codeContent: self.codeContent!, reportCallback: httpReportUUIDCallback)
         }
-        
-        let dataString = String(data: data, encoding: String.Encoding.utf8)!
-        //self.textView.string = self.textView.string + dataString! + "\n"
-        print("Set Data to Characteristic: " + dataString)
-        DispatchQueue.main.async {
-            self.statusMessage = "Set Data to Characteristic: " + dataString
-        }
-        
-        peripheralManager?.updateValue(
-            data,
-            for: characteristic,
-            onSubscribedCentrals: nil
-        )
     }
     
     func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didSubscribeTo characteristic: CBCharacteristic) {
-        print("PeripheralManager didScribeTo: " + characteristic.uuid.uuidString)
+        print("PeripheralManager didSubscribeTo: " + characteristic.uuid.uuidString)
+        
+        /*
         if peripheral.isAdvertising {
             peripheral.stopAdvertising()
             print("Stop Advertising")
             statusMessage = "Stop Advertising"
-        }
+        }*/
         
         if characteristic.uuid.uuidString.lowercased() == VERIFYRESULT_CHARACTERISTIC_UUID {
             print("Central Subscribes to BioVerifyResult Characteristic")
@@ -228,9 +276,30 @@ class BLEPeripheralController: NSObject, CBPeripheralManagerDelegate, Observable
             return
         }
         
-        print("Write Request Characteristic: " + at.characteristic.uuid.uuidString)
+        //print("Write Request Characteristic: " + at.characteristic.uuid.uuidString)
         
         if at.characteristic.uuid.uuidString.lowercased() == SWITCHFLAG_CHARACTERISTIC_UUID {
+            print("Write Request from SWITCHFLAG_CHARACTERISTIC Characteristic")
+            let string = String(data: data, encoding: .utf8)!
+            self.bioSwitchFlag = string
+            print("BioSwitchFlag Characteristic Received Switch Flag data: " + string)
+            statusMessage = "BioSwitchFlag Characteristic Received Switch Flag data: " + string
+            if string == "ON" {
+                do {
+                    let writeData = string.data(using: .utf8)!
+                    try setData(writeData, uuidString: SWITCHFLAG_CHARACTERISTIC_UUID)
+                }
+                catch {
+                    print(error)
+                    statusMessage = "peripheralManager didReceiveWrite for BioSwitchFlag Characteristic setData Exception: " + error.localizedDescription
+                    return
+                }
+
+                biometricsVerify(biometricsVerifyResultCallback: biometricsVerifyResultCallback)
+            }
+
+            peripheral.respond(to: at, withResult: .success)
+
             /*
             do {
                 let decoder = JSONDecoder()
@@ -299,32 +368,14 @@ class BLEPeripheralController: NSObject, CBPeripheralManagerDelegate, Observable
             peripheral.respond(to: at, withResult: .success)
             */
 
-            let string = String(data: data, encoding: .utf8)!
-            self.bioSwitchFlag = string
-            print("BioSwitchFlag Characteristic Received Switch Flag data: " + string)
-            statusMessage = "BioSwitchFlag Characteristic Received Switch Flag data: " + string
-            if string == "ON" {
-                do {
-                    let writeData = string.data(using: .utf8)!
-                    try setData(writeData, uuidString: SWITCHFLAG_CHARACTERISTIC_UUID)
-                }
-                catch {
-                    print(error)
-                    statusMessage = "peripheralManager didReceiveWrite setData Exception: " + error.localizedDescription
-                    return
-                }
-
-                biometricsVerify(biometricsVerifyResultCallback: biometricsVerifyResultCallback)
-            }
-
-            peripheral.respond(to: at, withResult: .success)
         }
 
         if at.characteristic.uuid.uuidString.lowercased() == VERIFYRESULT_CHARACTERISTIC_UUID {
+            print("Write Request from VERIFYRESULT_CHARACTERISTIC Characteristic")
             let string = String(data: data, encoding: .utf8)!
             self.bioVerifyResult = string
-            print("BioVerifyResult Characteristic Received Switch Flag data: " + string)
-            statusMessage = "BioVerifyResult Characteristic Received Switch Flag data: " + string
+            print("BioVerifyResult Characteristic Received Verify Result: " + string)
+            statusMessage = "BioVerifyResult Characteristic Received Verify Result: " + string
             
             do {
                 let writeData = string.data(using: .utf8)!
@@ -332,13 +383,14 @@ class BLEPeripheralController: NSObject, CBPeripheralManagerDelegate, Observable
             }
             catch {
                 print(error)
-                statusMessage = "peripheralManager didReceiveWrite setData Exception: " + error.localizedDescription
+                statusMessage = "peripheralManager didReceiveWrite for BioVerifyResult CharacteristicsetData Exception: " + error.localizedDescription
             }
 
             peripheral.respond(to: at, withResult: .success)
         }
         
         if at.characteristic.uuid.uuidString.lowercased() == CREDENTIALCONTENT_CHARACTERISTIC_UUID {
+            print("Write Request from CREDENTIALCONTENT_CHARACTERISTIC Characteristic")
             let string = String(data: data, encoding: .utf8)!
             self.bioCredentialContent = string
             print("BioCredentialContent Characteristic Received data: " + string)
@@ -350,7 +402,7 @@ class BLEPeripheralController: NSObject, CBPeripheralManagerDelegate, Observable
             }
             catch {
                 print(error)
-                statusMessage = "peripheralManager didReceiveWrite setData Exception: " + error.localizedDescription
+                statusMessage = "peripheralManager didReceiveWrite for BioCredentialContent CharacteristicsetData setData Exception: " + error.localizedDescription
             }
 
             peripheral.respond(to: at, withResult: .success)
@@ -364,24 +416,27 @@ class BLEPeripheralController: NSObject, CBPeripheralManagerDelegate, Observable
         print("Receive Read Request")
         statusMessage = "Receive Read Request"
         
-        print("Write Request Characteristic: " + request.characteristic.uuid.uuidString)
+        print("Read Request Characteristic: " + request.characteristic.uuid.uuidString)
         
         if request.characteristic.uuid.uuidString.lowercased() == SWITCHFLAG_CHARACTERISTIC_UUID {
-            print("Read SwitchFlag Value")
+            print("Read Request from SWITCHFLAG_CHARACTERISTIC Characteristic")
+            print("Read SwitchFlag Value: " + self.bioSwitchFlag)
             statusMessage = "Read SwitchFlag Value"
             let data = self.bioSwitchFlag.data(using: .utf8)
             request.value = data
         }
 
         if request.characteristic.uuid.uuidString.lowercased() == VERIFYRESULT_CHARACTERISTIC_UUID {
-            print("Read VerifyResult Value")
+            print("Read Request from VERIFYRESULT_CHARACTERISTIC Characteristic")
+            print("Read VerifyResult Value: " + self.bioVerifyResult)
             statusMessage = "Read VerifyResult Value"
             let data = self.bioVerifyResult.data(using: .utf8)
             request.value = data
         }
 
         if request.characteristic.uuid.uuidString.lowercased() == CREDENTIALCONTENT_CHARACTERISTIC_UUID {
-            print("Read CredentialContent Value")
+            print("Read Request from CREDENTIALCONTENT_CHARACTERISTIC Characteristic")
+            print("Read CredentialContent Value: " + self.bioCredentialContent)
             statusMessage = "Read CredentialContent Value"
             let data = self.bioCredentialContent.data(using: .utf8)
             request.value = data
@@ -390,6 +445,15 @@ class BLEPeripheralController: NSObject, CBPeripheralManagerDelegate, Observable
         peripheral.respond(to: request, withResult: .success)
     }
 
+    func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+        if ((error) != nil) {
+            print("Error changing notification state: " + error!.localizedDescription)
+        }
+        if characteristic.isNotifying {
+            print("Notification Updated")
+        }
+    }
+    
     /*
     func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveNotify request: CBATTRequest) {
         if request.characteristic.uuid.uuidString.lowercased() == SWITCHFLAG_CHARACTERISTIC_UUID {
@@ -419,10 +483,13 @@ class BLEPeripheralController: NSObject, CBPeripheralManagerDelegate, Observable
                 let data = "OK".data(using: .utf8)
                 try setData(data!, uuidString: VERIFYRESULT_CHARACTERISTIC_UUID)
                 self.bioVerifyResult = "OK"
+                
                 DispatchQueue.main.async {
+                    print("biometricsVerifyResultCallback Verify OK")
                     self.statusMessage = "biometricsVerifyResultCallback Verify OK"
                 }
                 
+                /*
                 // After Biometrics Verify OK, write credential content to Keychain
                 let credentials = Credentials(server: self.accountInfo.server_name, username: self.accountInfo.user_name, credential_hash: self.bioCredentialContent)
 
@@ -440,11 +507,11 @@ class BLEPeripheralController: NSObject, CBPeripheralManagerDelegate, Observable
                             self.statusMessage = "Add Credential to Keychain Error: " + error.localizedDescription
                         }
                     }
-                }
+                }*/
 
             }
             catch {
-                print(error)
+                print("biometricsVerifyResultCallback setData Exception: " + error.localizedDescription)
                 DispatchQueue.main.async {
                     self.statusMessage = "biometricsVerifyResultCallback setData Exception: " + error.localizedDescription
                 }
@@ -458,41 +525,46 @@ class BLEPeripheralController: NSObject, CBPeripheralManagerDelegate, Observable
                 try setData(data!, uuidString: VERIFYRESULT_CHARACTERISTIC_UUID)
                 self.bioVerifyResult = "NG"
                 DispatchQueue.main.async {
+                    print("biometricsVerifyResultCallback Verify NG")
                     self.statusMessage = "biometricsVerifyResultCallback Verify NG"
                 }
             }
             catch {
-                print(error)
+                print("biometricsVerifyResultCallback setData Exception: " + error.localizedDescription)
                 DispatchQueue.main.async {
                     self.statusMessage = "biometricsVerifyResultCallback setData Exception: " + error.localizedDescription
                 }
-                
-            }
+             }
         }
     }
     
     func httpReportUUIDCallback(result: String) {
         print("BLEPeripheralController Receive httpReportUUIDCallback")
         if result == "OK" {
+            print("httpReportUUIDCallback receive result: OK")
             httpRequestCredential(codeContent: self.codeContent!, requestCallback: httpCredentialRequestCallback)
         }
     }
 
     func httpCredentialRequestCallback(result: String, reply: HttpCredentialReply) {
         print("BLEPeripheralController Receive httpCredentialRequestCallback")
+        
         if result == "OK" {
+            print("httpCredentialRequestCallback receive result: OK")
             // Start to write Credential Content into CREDENTIALCONTENT_CHARACTERISTIC
-            self.bioCredentialContent = reply.credential
-            do {
-                let data = self.bioCredentialContent.data(using: .utf8)
-                try setData(data!, uuidString: CREDENTIALCONTENT_CHARACTERISTIC_UUID)
-            }
-            catch {
-                print(error)
-                DispatchQueue.main.async {
-                    self.statusMessage = "peripheralManager httpCredentialRequestCallback setData Exception: " + error.localizedDescription
+            self.bioCredentialContent = reply.CredentialSign
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                do {
+                    let data = self.bioCredentialContent.data(using: .utf8)
+                    try self.setData(data!, uuidString: self.CREDENTIALCONTENT_CHARACTERISTIC_UUID)
+                    
                 }
-                
+                catch {
+                    print("peripheralManager httpCredentialRequestCallback setData Exception: " + error.localizedDescription)
+                    DispatchQueue.main.async {
+                        self.statusMessage = "peripheralManager httpCredentialRequestCallback setData Exception: " + error.localizedDescription
+                    }
+                }
             }
         }
     }

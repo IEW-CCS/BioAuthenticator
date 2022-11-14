@@ -12,12 +12,12 @@ struct HttpCredentialRequest: Codable {
 }
 
 struct HttpCredentialReply: Codable {
-    var credential: String = ""
+    var CredentialSign: String = ""
 }
 
 struct HttpUUIDReport: Codable {
-    var UserName: String = ""
-    var DeviceUUID: String = ""
+    //var UserName: String = ""
+    var DeviceUUIDJSon: String = ""
     var MobilePublicKey: String = ""
     //var TimeStamp: Date = Date.now
 }
@@ -37,12 +37,6 @@ struct HttpUUIDReport2: Codable {
 
 struct HttpUUIDReply2: Codable {
     let replyResult: String
-}
-
-struct QRCodeContent: Codable {
-    let strServerURL: String
-    let strTokenID: String
-    let strUserName: String
 }
 
 struct HttpTrx: Codable {

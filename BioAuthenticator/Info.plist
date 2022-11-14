@@ -3,17 +3,19 @@
 <plist version="1.0">
 <dict>
 	<key>NSFaceIDUsageDescription</key>
-	<string>Use FaceID to Proceed Authentication</string>
+	<string>Use FaceID to Authenticate</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Use Camara to Scan QR Code</string>
+	<string>Use Camera to Scan Server Information</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>Use BluetoothLE to Connect Application</string>
+	<string>Use Bluetooth to Communicate with Desktop App</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>Use BluetoothLE to Connect Application</string>
+	<string>Use Bluetooth to Communicate with Desktop App</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-central</string>
 		<string>bluetooth-peripheral</string>
+		<string>nearby-interaction</string>
+		<string>remote-notification</string>
 	</array>
 </dict>
 </plist>

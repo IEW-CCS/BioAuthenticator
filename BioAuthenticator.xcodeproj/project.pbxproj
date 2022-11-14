@@ -20,6 +20,7 @@
 		36B19B9C28AB11F80040136D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 36B19B9B28AB11F80040136D /* Preview Assets.xcassets */; };
 		36B19B9E28AB11F80040136D /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36B19B9D28AB11F80040136D /* Persistence.swift */; };
 		36B19BA128AB11F80040136D /* BioAuthenticator.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 36B19B9F28AB11F80040136D /* BioAuthenticator.xcdatamodeld */; };
+		36E8205728E138C900CA0676 /* GlobalConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36E8205628E138C900CA0676 /* GlobalConstants.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +40,7 @@
 		36B19B9B28AB11F80040136D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		36B19B9D28AB11F80040136D /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		36B19BA028AB11F80040136D /* BioAuthenticator.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = BioAuthenticator.xcdatamodel; sourceTree = "<group>"; };
+		36E8205628E138C900CA0676 /* GlobalConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalConstants.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,14 +93,15 @@
 			isa = PBXGroup;
 			children = (
 				362C38CB28C4DE990048A42A /* Scanner */,
+				36E8205628E138C900CA0676 /* GlobalConstants.swift */,
 				362C38CC28C624FF0048A42A /* Definitionns.swift */,
 				364B05E428BFA6DD007D3ECF /* HttpTransactions.swift */,
 				364B05E228BFA32D007D3ECF /* Utility.swift */,
 				364B05D528BD96AC007D3ECF /* BLEPeripheralController.swift */,
+				36B19B9628AB11F20040136D /* ContentView.swift */,
 				364B05DB28BE3B58007D3ECF /* Info.plist */,
 				364B05D728BD9887007D3ECF /* BioAuthenticator.entitlements */,
 				36B19B9428AB11F20040136D /* BioAuthenticatorApp.swift */,
-				36B19B9628AB11F20040136D /* ContentView.swift */,
 				36B19B9828AB11F80040136D /* Assets.xcassets */,
 				36B19B9D28AB11F80040136D /* Persistence.swift */,
 				36B19B9F28AB11F80040136D /* BioAuthenticator.xcdatamodeld */,
@@ -190,6 +193,7 @@
 				36B19B9728AB11F20040136D /* ContentView.swift in Sources */,
 				364B05E528BFA6DD007D3ECF /* HttpTransactions.swift in Sources */,
 				364B05D628BD96AC007D3ECF /* BLEPeripheralController.swift in Sources */,
+				36E8205728E138C900CA0676 /* GlobalConstants.swift in Sources */,
 				364B05E328BFA32D007D3ECF /* Utility.swift in Sources */,
 				364B05DE28BF81BA007D3ECF /* CodeScanner.swift in Sources */,
 				36B19BA128AB11F80040136D /* BioAuthenticator.xcdatamodeld in Sources */,
@@ -329,11 +333,16 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BioAuthenticator/Info.plist;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Use BluetoothLE to Connect Application";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Use BluetoothLE to Connect Application";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Use Camara to Scan QR Code";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Use FaceID to Proceed Authentication";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -362,11 +371,16 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BioAuthenticator/Info.plist;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Use BluetoothLE to Connect Application";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Use BluetoothLE to Connect Application";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Use Camara to Scan QR Code";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Use FaceID to Proceed Authentication";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

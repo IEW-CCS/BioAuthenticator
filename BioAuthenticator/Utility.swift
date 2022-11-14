@@ -42,15 +42,15 @@ func httpReportUUID(codeContent: QRCodeContent, reportCallback: @escaping (Strin
         //let httpBody2 = HttpUUIDReport2(serverURL: "UUID_Report", clientID: "client_james", processStep: "UUIDREPORT", serviceUUID: "e593247c-bc00-41a3-93d0-3ad4b64b27cb")
         
         var uuidReport: HttpUUIDReport = HttpUUIDReport()
-        uuidReport.UserName = codeContent.strUserName
-        uuidReport.DeviceUUID = "UUID_abc"
+        //uuidReport.UserName = codeContent.strUserName
+        uuidReport.DeviceUUIDJSon = "UUID_abc"
         let jsonReportData = try JSONEncoder().encode(uuidReport)
         let uuidReportString = String(data: jsonReportData, encoding: .utf8)!
         
         var httpBody: HttpTrx = HttpTrx()
         httpBody.username = codeContent.strUserName
         httpBody.devicetype = "MOBILE"
-        httpBody.procstep = "UUID_RPT"
+        httpBody.procstep = "CRUIDRPT"
         httpBody.datacontent = uuidReportString
         
         jsonData = try JSONEncoder().encode(httpBody)
@@ -151,7 +151,7 @@ func httpRequestCredential(codeContent: QRCodeContent, requestCallback: @escapin
         var httpBody: HttpTrx = HttpTrx()
         httpBody.username = codeContent.strUserName
         httpBody.devicetype = "MOBILE"
-        httpBody.procstep = "CRED_REQ"
+        httpBody.procstep = "CRCRLREQ"
         httpBody.datacontent = requestString
         
         jsonData = try JSONEncoder().encode(httpBody)
@@ -208,7 +208,7 @@ func httpRequestCredential(codeContent: QRCodeContent, requestCallback: @escapin
                     let credentialReplyDecoder = JSONDecoder()
                     let credentialReply = try credentialReplyDecoder.decode(HttpCredentialReply.self, from: credentialReplyData!)
                     print("json decoding seems OK!!")
-                    print("Credential: " + credentialReply.credential)
+                    print("Credential: " + credentialReply.CredentialSign)
                     requestCallback("OK", credentialReply)
                 }
                 else {
@@ -255,10 +255,10 @@ func biometricsVerify(biometricsVerifyResultCallback: @escaping (Bool) -> ()) {
 
 // Biometrics & Keychain related declaration and functions
 // Stores credentials to keychain for the given server.
-func addCredentials(_ credentials: Credentials) throws {
+func addKeyChainCredentials(_ credentials: Credentials) throws {
     // Use the username as the account, and get the password as data.
     let account = credentials.username
-    let credential_hash = credentials.credential_hash.data(using: String.Encoding.utf8)!
+    let credential_sign = credentials.credential_sign.data(using: String.Encoding.utf8)!
 
     // Create an access control instance that dictates how the item can be read later.
     let access = SecAccessControlCreateWithFlags(nil, // Use the default allocator.
@@ -276,7 +276,7 @@ func addCredentials(_ credentials: Credentials) throws {
                                 kSecAttrServer as String: credentials.server,
                                 kSecAttrAccessControl as String: access as Any,
                                 kSecUseAuthenticationContext as String: context,
-                                kSecValueData as String: credential_hash]
+                                kSecValueData as String: credential_sign]
 
     let status = SecItemAdd(query as CFDictionary, nil)
     guard status == errSecSuccess else { throw KeychainError(status: status) }
@@ -284,7 +284,7 @@ func addCredentials(_ credentials: Credentials) throws {
 
 
 // Reads the stored credentials from keychain for the given server.
-func readCredentials(server: String) throws -> Credentials {
+func readKeyChainCredentials(server: String) throws -> Credentials {
     let context = LAContext()
     context.localizedReason = "Access your password on the keychain"
     let query: [String: Any] = [kSecClass as String: kSecClassInternetPassword,
@@ -300,12 +300,12 @@ func readCredentials(server: String) throws -> Credentials {
 
     guard let existingItem = item as? [String: Any],
         let credentialData = existingItem[kSecValueData as String] as? Data,
-        let credential_hash = String(data: credentialData, encoding: String.Encoding.utf8),
+        let credential_sign = String(data: credentialData, encoding: String.Encoding.utf8),
         let account = existingItem[kSecAttrAccount as String] as? String
         else {
             throw KeychainError(status: errSecInternalError)
     }
 
-    return Credentials(server: server, username: account, credential_hash: credential_hash)
+    return Credentials(server: server, username: account, credential_sign: credential_sign)
 }
 

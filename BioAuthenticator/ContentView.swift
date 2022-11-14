@@ -13,6 +13,7 @@ struct ContentView: View {
     @EnvironmentObject var blePeripheralController: BLEPeripheralController
     @State private var isPresentingScanner = false
     @State private var scannedCode: String?
+    @State private var registerState = true
     
     //@FetchRequest(
     //    sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
@@ -22,78 +23,58 @@ struct ContentView: View {
     var body: some View {
         GeometryReader { proxy in
             VStack {
-                //Spacer()
-                /*
-                Button(action: {blePeripheralController.start()}) {
-                    Text("Start Advertising")
-                        .frame(width: proxy.size.width / 1.1,
-                               height: 50,
-                               alignment: .center)
-                        .foregroundColor(Color.blue)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.blue, lineWidth: 2))
-                }
-                
-                HStack {
-                    Text("SwitchFlag: ")
-                        .padding()
-                    Spacer()
-                    Text("\(blePeripheralController.bioSwitchFlag)")
-                        .padding()
-                }
 
-                HStack {
-                    Text("VerifyResult: ")
-                        .padding()
-                    //Spacer()
-                    TextField("Result", text: $blePeripheralController.bioVerifyResult)
-                        .padding()
-                    Button(action: {blePeripheralController.writeVerifyResult(result: "OK")}) {
-                        Text("Notify")
-                            .padding()
+                Toggle(isOn: $registerState) {
+                    Text(registerState ? "Register Phase" : "Authentication Phase")
+                }
+                .padding()
+                
+                if registerState {
+                    Button(action: { isPresentingScanner = true }) {
+                        Text("Scan to Register")
+                            .frame(width: proxy.size.width / 1.1,
+                                   height: 50,
+                                   alignment: .center)
+                            .foregroundColor(Color.blue)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.blue, lineWidth: 2))
                     }
-                }*/
-
-                Button(action: { isPresentingScanner = true }) {
-                    Text("Scan to Register")
-                        .frame(width: proxy.size.width / 1.1,
-                               height: 50,
-                               alignment: .center)
-                        .foregroundColor(Color.blue)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.blue, lineWidth: 2))
+                        .padding()
+                    
+                    Text("\(scannedCode ?? "")")
+                        .padding()
                 }
-                    .padding()
-                
-                Text("\(scannedCode ?? "")")
-                    .padding()
+                else {
+                    Button(action: {
+                        //blePeripheralController.startMode = CONNECT_MODE_AUTHENTICATION
+                        //blePeripheralController.start_auth()
+                        blePeripheralController.startMode = CONNECT_MODE_TEST
+                        blePeripheralController.start_test()
+
+                    }) {
+                        Image(systemName: "faceid")
+                            .resizable()
+                            .scaledToFit()
+                    }
+                    .frame(width: proxy.size.width / 4,
+                           height: proxy.size.width / 4,
+                           alignment: .center)
+                        .padding()
+                }
                 
                 Spacer()
                 
                 Text("\(blePeripheralController.statusMessage)")
                     .padding()
-
-                /*
-                Button(action: {
-                    //blePeripheralController.start()
-                    //biometricsVerify()
-                    //print("BiometricsVerify result: " + result)
-                }, label: {
-                            Image(systemName: "faceid")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 80, height: 80)
-                        })*/
-                
             }
             .sheet(isPresented: $isPresentingScanner) {
                 CodeScannerView(codeTypes: [.qr], showViewfinder: true) { response in
                     if case let .success(result) = response {
                         scannedCode = result.string
                         isPresentingScanner = false
-                        blePeripheralController.start(qrCode: scannedCode!)
+                        blePeripheralController.startMode = CONNECT_MODE_REGISTER
+                        blePeripheralController.start_register(qrCode: scannedCode!)
                     }
                 }
             }

@@ -8,6 +8,8 @@
 import Foundation
 import LocalAuthentication
 
+
+
 struct BioAccountInformation: Codable {
     let bio_switch_flag: String
     let mode: String
@@ -26,5 +28,11 @@ struct KeychainError: Error {
 struct Credentials {
     var server: String
     var username: String
-    var credential_hash: String
+    var credential_sign: String
+}
+
+struct QRCodeContent: Codable {
+    let strServerURL: String
+    let strTokenID: String
+    let strUserName: String
 }
